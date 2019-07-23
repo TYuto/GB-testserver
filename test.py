@@ -22,6 +22,7 @@ def return_index():
 
 @app.route('/reset')
 def reset_data():
+    lists = []
     response = jsonify('reset all data')
     response.status_code = 200
     return response
@@ -32,7 +33,6 @@ def return_lists():
 
 @app.route("/add_blocks", methods=["POST"])
 def add_block():
-    print (request)
     lists.append(request.json)
     
     response = jsonify({'results': 'ok'})

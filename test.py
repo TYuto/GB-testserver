@@ -1,7 +1,23 @@
 from flask import Flask, request, jsonify
+from flask_sqlalchemy import SQLAlchemy
 app = Flask(__name__)
 
-lists = []
+app.config['SQLALCHEMY_DATABASE_URI'] = os.environ['DATABASE_URL']
+#app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///sample_db.sqlite3'
+db = SQLAlchemy(app)
+
+# モデル作成
+class Reqs(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    jsontext = db.Column(db.String(124))
+
+    def __init__(self, jsontext):
+        self.jsontext = jsontext
+
+    def __repr__(self):
+        return '<User %r>' % self.username
+
+
 
 @app.route('/')
 def return_index():
@@ -22,18 +38,22 @@ def return_index():
 
 @app.route('/reset')
 def reset_data():
-    lists = []
+    db.session.query(Reqs).delete()
+    db.session.commit()
+
     response = jsonify('reset all data')
     response.status_code = 200
     return response
 
 @app.route('/lists')
 def return_lists():
-    return jsonify(lists)
+    return jsonify(db.session.query(Reqs.jsontext).all())
 
 @app.route("/add_blocks", methods=["POST"])
 def add_block():
-    lists.append(request.json)
+    a = Reqs(str(request.json))
+    db.session.add(a)
+    db.session.commit()
     
     response = jsonify({'results': 'ok'})
     response.status_code = 200
